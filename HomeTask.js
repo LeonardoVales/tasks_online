@@ -19,6 +19,8 @@ import commonStyles from './src/commonStyles'
 import Task from './src/components/Task'
 import { Ionicons } from '@expo/vector-icons';
 import AddTask from './src/screens/AddTask'    
+import axios from 'axios'
+import { server, showError } from './src/common'
 
 
 const initialState = {
@@ -36,8 +38,24 @@ export default class HomeTask extends Component {
 
   componentDidMount = async () => {
     const stateString = await AsyncStorage.getItem('tasksState')
-    const state = JSON.parse(stateString) || initialState
-    this.setState(state, this.filterTasks)
+    const savedState = JSON.parse(stateString) || initialState
+    this.setState({
+      showDoneTasks: savedState.showDoneTasks
+    }, this.filterTasks)
+
+    this.loadTasks()
+
+  }
+
+  //carrega as tasks
+  loadTasks = async () => {
+      try {
+        const maxDate = moment().format('YYYY-MM-DD 23:59:59')
+        const res = await axios.get(`${server}/tasks/${maxDate}`)
+        this.setState({ tasks: res.data }, this.filterTasks)
+      } catch (e) {
+
+      }
   }
 
   toggleFilter = () => {
@@ -53,7 +71,9 @@ export default class HomeTask extends Component {
       visibleTasks = this.state.tasks.filter(pending)
     }
     this.setState({visibleTasks})
-    AsyncStorage.setItem('tasksState', JSON.stringify(this.state))
+    AsyncStorage.setItem('tasksState', JSON.stringify({
+        showDoneTasks: this.state.showAddTask
+    }))
   }
 
   toggleTask = taskId => {

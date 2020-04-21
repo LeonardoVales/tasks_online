@@ -12,21 +12,25 @@ import AuthInput from '../components/AuthInput'
 import { server, showError, showSuccess } from '../common'
 import axios from 'axios'
 
+const initialState = {
+        name: '',
+        email: 'leohenrique.vales@gmail.com',
+        password: '123456',
+        confirmPassword: '',
+        stageNew: false    
+}
+
 export default class Auth extends Component {
 
     state = {
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        stageNew: false
+        ...initialState
     }
     
     signinOrSignup = () => {
         if (this.state.stageNew) {
             this.signup()
         } else {
-            Alert.alert('Sucesso!', 'logar')
+            this.signin()
         }
     }
 
@@ -40,14 +44,43 @@ export default class Auth extends Component {
                 confirmPassword: this.state.confirmPassword,
             })
             showSuccess('Usuário cadastrado!')
-            this.setState({ stageNew: false })
+            this.setState({ ...initialState })
         } catch (e) {
             showError(e)
         }
 
     }
 
+    signin = async () => {
+
+        try {
+            const res = await axios.post(`${server}/login`, {
+                        email:    this.state.email,
+                        password: this.state.password,
+            })
+
+            axios.defaults.headers.common['Autorization'] = `bearer ${res.data.token}`
+            this.props.navigation.navigate('Home')
+
+        } catch (e) {
+            showError(e)
+        }
+    }
+
     render() {
+
+        const validations = []
+        validations.push(this.state.email && this.state.email.includes('@'))
+        validations.push(this.state.password && this.state.password.length >= 6)
+
+        if (this.state.stageNew) {
+            validations.push(this.state.name && this.state.name.trim().length >= 3)
+            validations.push(this.state.password === this.state.confirmPassword)
+        }
+
+        //expressão reduce que verifica se todas as validações são verdadeiras
+        const valideForm = validations.reduce((t, a) => t && a)
+
         return (
             <ImageBackground source={backgroundImage} style={styles.background}>
                 <Text style={styles.title}>Tasks</Text>
@@ -82,8 +115,8 @@ export default class Auth extends Component {
                                    onChangeText={confirmPassword => this.setState({ confirmPassword })} />                    
                     }
 
-                    <TouchableOpacity onPress={this.signinOrSignup}>
-                        <View style={styles.button}>
+                    <TouchableOpacity onPress={this.signinOrSignup} disabled={!valideForm}>
+                        <View style={[styles.button, valideForm ? {} : { backgroundColor : '#AAA'}]}>
                             <Text style={styles.buttonText}>
                                 {this.state.stageNew ? 'Registrar' : 'Entrar'}
                             </Text>
