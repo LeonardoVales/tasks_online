@@ -28,7 +28,7 @@ const initialState = {
     tasks:         []
 }
 
-export default class Task extends Component {
+export default class HomeTask extends Component {
 
   state = {
     ...initialState
