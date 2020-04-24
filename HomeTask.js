@@ -37,6 +37,7 @@ export default class HomeTask extends Component {
   }
 
   componentDidMount = async () => {
+    
     const stateString = await AsyncStorage.getItem('tasksState')
     const savedState = JSON.parse(stateString) || initialState
     this.setState({
@@ -51,10 +52,11 @@ export default class HomeTask extends Component {
   loadTasks = async () => {
       try {
         const maxDate = moment().format('YYYY-MM-DD 23:59:59')
-        const res = await axios.get(`${server}/tasks/${maxDate}`)
+        const res     = await axios.get(`${server}/tasks/${maxDate}`)
+      
         this.setState({ tasks: res.data }, this.filterTasks)
       } catch (e) {
-
+        showError(e)
       }
   }
 
