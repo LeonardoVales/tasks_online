@@ -78,41 +78,58 @@ export default class HomeTask extends Component {
     }))
   }
 
-  toggleTask = taskId => {
+  toggleTask = async taskId => {
 
-    const tasks = [...this.state.tasks]
-    tasks.forEach(task => {
-      if (task.id === taskId) {
-        task.doneAt = task.doneAt ? null : new Date();
+      try {
+
+          await axios.put(`${server}/tasks/toggle/${taskId}`)
+          this.loadTasks()
+
+      } catch(e) {
+        showError(e)
       }
-    })
-
-    this.setState({tasks: tasks}, this.filterTasks)
 
   }
 
-  AddTask = newTask => {
+  AddTask = async newTask => {
     
     if (!newTask.desc || !newTask.desc.trim()) {
       Alert.alert('Dados inválidos', 'Descrição não informada')
       return 
     }
 
-    const tasks = [...this.state.tasks]
-    tasks.push({
-      id:         Math.random(),
-      desc:       newTask.desc,
-      estimateAt: newTask.date,
-      doneAt:     null
-    })
+    try {
 
-    this.setState({tasks, showAddTask: false}, this.filterTasks)
 
+      
+      await axios.post(`${server}/tasks/create`, {
+        desc:       newTask.desc,
+        estimateAt: newTask.date
+      });
+
+      
+
+      this.setState({showAddTask: false}, this.loadTasks)
+
+    } catch(e) {
+      showError(e)
+    }
+
+  
   }
 
-  deleteTask = id => {
-    const tasks = this.state.tasks.filter(task => task.id !== id) //Pega todas as takks que são diferentes do ID passado
-    this.setState({ tasks }, this.filterTasks) //e gera um novo array atualizando o status
+  deleteTask = async taskId => {
+
+    try {
+
+      await axios.delete(`${server}/tasks/delete/${taskId}`)
+      this.loadTasks()
+
+    } catch(e) {
+      showError(e)
+    }
+
+
   }
 
   render() {
