@@ -11,8 +11,14 @@ import { View,
          AsyncStorage
         } from 'react-native';
 
-// import AsyncStorage from '@react-native-community/async-storage'
+
 import todayImage from './assets/imgs/today.jpg';
+import tomorrowImage from './assets/imgs/tomorrow.jpg';
+import weekImage from './assets/imgs/week.jpg';
+import monthImage from './assets/imgs/month.jpg';
+
+
+
 import moment from 'moment'
 import 'moment/locale/pt-br'
 import commonStyles from './src/commonStyles'
@@ -51,9 +57,11 @@ export default class HomeTask extends Component {
   //carrega as tasks
   loadTasks = async () => {
       try {
-        const maxDate = moment().format('YYYY-MM-DD 23:59:59')
+        const maxDate = moment()
+                        .add({ days: this.props.daysAhead })
+                        .format('YYYY-MM-DD 23:59:59')
         const res     = await axios.get(`${server}/tasks/${maxDate}`)
-      
+        console.log(maxDate);
         this.setState({ tasks: res.data }, this.filterTasks)
       } catch (e) {
         showError(e)
@@ -128,6 +136,31 @@ export default class HomeTask extends Component {
 
   }
 
+  getImage = () => {
+
+    switch(this.props.daysAhead) {
+      case 0: return todayImage
+      case 1: return tomorrowImage
+      case 7: return weekImage
+      case 30: return monthImage
+      defaullt: return monthImage
+    }
+
+  }
+
+  getColor = () => {
+
+    switch(this.props.daysAhead) {
+      case 0: return commonStyles.colors.today
+      case 1: return commonStyles.colors.tomorrw
+      case 7: return commonStyles.colors.week
+      case 30: return commonStyles.colors.month
+      defaullt: return commonStyles.colors.month
+    }
+    
+  }
+
+
   render() {
 
     const today = moment().locale('pt-br').format('ddd, D [de] MMMM')
@@ -139,19 +172,25 @@ export default class HomeTask extends Component {
           isVisible={this.state.showAddTask} 
           onCancel={() => this.setState({showAddTask: false})}
           onSave={this.AddTask}  />
-        <ImageBackground source={todayImage} style={styles.background}>
+        <ImageBackground source={this.getImage()} style={styles.background}>
           
             <TouchableOpacity style={styles.iconBar} onPress={this.toggleFilter}>
-              
+
+                <TouchableOpacity onPress={() => this.props.navigation.openDrawer()}>
+                  <Ionicons name='ios-menu' 
+                            size={30} 
+                            color={commonStyles.colors.secondary} />
+                </TouchableOpacity>
+
                 <Ionicons 
                   name={this.state.showDoneTasks ? 'md-eye' : 'md-eye-off'}                   
-                  size={40} 
+                  size={30} 
                   color={commonStyles.colors.secondary} />
             
             </TouchableOpacity>
           
           <View style={styles.titleBar}>
-            <Text style={styles.title}>Hoje</Text>
+            <Text style={styles.title}>{this.props.title}</Text>
             <Text style={styles.subtitle}>{today}</Text>
           </View>
         </ImageBackground>
@@ -163,7 +202,7 @@ export default class HomeTask extends Component {
           />
         </View>   
         <TouchableOpacity 
-          style={styles.addButton}
+          style={[styles.addButton, { backgroundColor: this.getColor() }]}
           onPress={() => this.setState({showAddTask: true})}
           activeOpacity={0.7}>
           <Ionicons 
@@ -205,8 +244,8 @@ const styles = StyleSheet.create({
   iconBar: {
     flexDirection: 'row',
     marginHorizontal: 20,
-    
-    justifyContent: 'flex-end',
+    marginTop: 20,
+    justifyContent: 'space-between',
     // marginTop: Platform.OS === 'ios' ? 30 : 25,
   },
   addButton: {
@@ -216,7 +255,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: commonStyles.colors.today,
     justifyContent: 'center',
     alignItems: 'center'
   }
