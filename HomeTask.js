@@ -100,8 +100,6 @@ export default class HomeTask extends Component {
 
     try {
 
-
-      
       await axios.post(`${server}/tasks/create`, {
         desc:       newTask.desc,
         estimateAt: newTask.date
@@ -115,7 +113,6 @@ export default class HomeTask extends Component {
       showError(e)
     }
 
-  
   }
 
   deleteTask = async taskId => {
@@ -128,7 +125,6 @@ export default class HomeTask extends Component {
     } catch(e) {
       showError(e)
     }
-
 
   }
 
