@@ -61,7 +61,6 @@ export default class HomeTask extends Component {
                         .add({ days: this.props.daysAhead })
                         .format('YYYY-MM-DD 23:59:59')
         const res     = await axios.get(`${server}/tasks/${maxDate}`)
-        console.log(maxDate);
         this.setState({ tasks: res.data }, this.filterTasks)
       } catch (e) {
         showError(e)
