@@ -16,7 +16,7 @@ import todayImage from './assets/imgs/today.jpg';
 import tomorrowImage from './assets/imgs/tomorrow.jpg';
 import weekImage from './assets/imgs/week.jpg';
 import monthImage from './assets/imgs/month.jpg';
-
+import refreshToken from './src/components/refreshToken'
 
 
 import moment from 'moment'
@@ -57,10 +57,14 @@ export default class HomeTask extends Component {
   //carrega as tasks
   loadTasks = async () => {
       try {
+
+        await refreshToken()
+
         const maxDate = moment()
                         .add({ days: this.props.daysAhead })
                         .format('YYYY-MM-DD 23:59:59')
         const res     = await axios.get(`${server}/tasks/${maxDate}`)
+        
         this.setState({ tasks: res.data }, this.filterTasks)
       } catch (e) {
         showError(e)

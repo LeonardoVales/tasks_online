@@ -12,15 +12,18 @@ import commonStyles from '../commonStyles';
 import AuthInput from '../components/AuthInput'
 import { server, showError, showSuccess } from '../common'
 import axios from 'axios'
+import * as SecureStore from 'expo-secure-store';
 
 
 const initialState = {
         name: '',
-        email: '',
-        password: '',
+        email: 'calvino@gmail.com',
+        password: '123456',
         confirmPassword: '',
         stageNew: false    
 }
+
+const KEY_SECURE = {keychainService: 'tasks@2020'}
 
 export default class Auth extends Component {
 
@@ -60,8 +63,13 @@ export default class Auth extends Component {
                         email:    this.state.email,
                         password: this.state.password,
             })
+
+            const dados_login = {email: this.state.email, password: this.state.password}
             
+            // AsyncStorage.setItem('userData', JSON.stringify(res.data))
             AsyncStorage.setItem('userData', JSON.stringify(res.data))
+            await SecureStore.setItemAsync('tasks_login', JSON.stringify(dados_login), KEY_SECURE)
+
             axios.defaults.headers.common['Authorization'] = `bearer ${res.data.token}`
             this.props.navigation.navigate('Home', res.data)
 
